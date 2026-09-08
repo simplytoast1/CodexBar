@@ -326,6 +326,7 @@ final class UsageStore {
     @ObservationIgnored var lastQueuedWidgetSnapshot: WidgetSnapshot?
     @ObservationIgnored var invalidatedQueuedWidgetProviders: Set<ProviderInstanceID> = []
     @ObservationIgnored var lastWidgetSourceSnapshots: [ProviderInstanceID: UsageSnapshot] = [:]
+
     /// The Notify! publisher, created on the first snapshot once the feature is on.
     /// One per store: it holds the stored tile and widget handles and the single
     /// in-flight publish, and two of them would race over one nil activity id.

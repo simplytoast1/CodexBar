@@ -222,10 +222,35 @@ struct NotifyPane: View {
         self.hasStoredToken && NotifyDeviceLink.isValidDeviceId(self.settings.notifyDeviceID)
     }
 
+    /// What kind of device the ID in the field names.
+    ///
+    /// Reads the field rather than the saved value, for the same reason Verify
+    /// does: this drives the "Linked device" row and the sentence explaining why
+    /// a surface is unavailable, and both are most useful the moment somebody
+    /// pastes an ID — not after they have saved one that cannot show a tile. The
+    /// field starts out holding the saved value, so this only ever differs from
+    /// it while an edit is in progress.
     private var linkKind: NotifyDeviceKind? {
-        let identifier = self.settings.notifyDeviceID
+        let identifier = self.deviceIDField.trimmingCharacters(in: .whitespacesAndNewlines)
         guard NotifyDeviceLink.isValidDeviceId(identifier) else { return nil }
         return NotifyDeviceKind.kind(ofDeviceId: identifier)
+    }
+
+    /// The credentials as currently typed, which is what Verify has to check.
+    ///
+    /// Reading the saved link instead would make Verify useless until after a
+    /// Save — the button would refuse the very values the user just entered and
+    /// wants checked before committing them.
+    ///
+    /// An empty token field means "keep the stored token", not "no token": the
+    /// field is deliberately never populated from the Keychain, so somebody
+    /// correcting only their device ID leaves it blank. The Keychain read is
+    /// safe here because this runs from a button, never during a render.
+    private func currentLink() -> NotifyDeviceLink? {
+        let token = self.tokenField.isEmpty
+            ? (self.settings.notifyDeviceToken() ?? "")
+            : self.tokenField
+        return NotifyDeviceLink(deviceId: self.deviceIDField, token: token)
     }
 
     private var canSave: Bool {
@@ -323,7 +348,7 @@ struct NotifyPane: View {
     /// The gateway rate limits this route to five calls a minute, so it lives
     /// behind this button and nothing else. Nothing on a timer may call it.
     private func verify() async {
-        guard let link = self.settings.notifyDeviceLink() else {
+        guard let link = self.currentLink() else {
             self.status = .failure(L("notify_status_needs_both"))
             return
         }

@@ -198,6 +198,7 @@ final class InMemoryTokenAccountStore: ProviderTokenAccountStoring, @unchecked S
 private let testConfigStoreProcessRoot = FileManager.default.temporaryDirectory
     .appendingPathComponent("codexbar-tests", isDirectory: true)
     .appendingPathComponent(UUID().uuidString, isDirectory: true)
+
 /// The Notify! device token, in memory. Every Notify test uses this: a test that reaches the
 /// real Keychain can raise a macOS prompt, which no part of the suite is allowed to do.
 struct InMemoryNotifyTokenStore: NotifyTokenStoring {
