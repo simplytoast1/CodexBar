@@ -7,6 +7,9 @@ private enum KeychainPromptMessage {
         "CodexBar will ask macOS Keychain for “%@” so it can decrypt browser cookies " +
         "and authenticate your account. Click OK to continue."
 
+    static let notifyToken =
+        "CodexBar will ask macOS Keychain for your Notify! device token " +
+        "so it can publish your quota to your phone. Click OK to continue."
     static let claudeOAuth =
         "CodexBar will ask macOS Keychain for the Claude Code OAuth token " +
         "so it can fetch your Claude usage. Click OK to continue."
@@ -158,6 +161,8 @@ enum KeychainPromptCoordinator {
             L(KeychainPromptMessage.augmentCookie)
         case .ampCookie:
             L(KeychainPromptMessage.ampCookie)
+        case .notifyToken:
+            L(KeychainPromptMessage.notifyToken)
         }
         return self.alertModel(purpose: purpose)
     }
