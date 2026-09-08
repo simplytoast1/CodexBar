@@ -198,6 +198,31 @@ final class InMemoryTokenAccountStore: ProviderTokenAccountStoring, @unchecked S
 private let testConfigStoreProcessRoot = FileManager.default.temporaryDirectory
     .appendingPathComponent("codexbar-tests", isDirectory: true)
     .appendingPathComponent(UUID().uuidString, isDirectory: true)
+/// The Notify! device token, in memory. Every Notify test uses this: a test that reaches the
+/// real Keychain can raise a macOS prompt, which no part of the suite is allowed to do.
+struct InMemoryNotifyTokenStore: NotifyTokenStoring {
+    final class Box: @unchecked Sendable {
+        var token: String?
+        init(token: String? = nil) {
+            self.token = token
+        }
+    }
+
+    let box: Box
+
+    init(token: String? = nil) {
+        self.box = Box(token: token)
+    }
+
+    func loadToken() throws -> String? {
+        self.box.token
+    }
+
+    func storeToken(_ token: String?) throws {
+        let cleaned = token?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.box.token = (cleaned?.isEmpty == false) ? cleaned : nil
+    }
+}
 
 func testConfigStore(suiteName: String, reset: Bool = true) -> CodexBarConfigStore {
     let sanitized = suiteName.replacingOccurrences(of: "/", with: "-")
@@ -227,6 +252,7 @@ func testSettingsStore(
     suiteName: String,
     userDefaults: UserDefaults? = nil,
     tokenAccountStore: any ProviderTokenAccountStoring = InMemoryTokenAccountStore(),
+    notifyTokenStore: any NotifyTokenStoring = InMemoryNotifyTokenStore(),
     config: CodexBarConfig? = nil,
     keychainAccessPolicy: SettingsStoreKeychainAccessPolicy = .live,
     prepareDefaults: ((UserDefaults) -> Void)? = nil) -> SettingsStore
@@ -249,6 +275,7 @@ func testSettingsStore(
         userDefaults: defaults,
         configStore: configStore,
         zaiTokenStore: NoopZaiTokenStore(),
+        notifyTokenStore: notifyTokenStore,
         syntheticTokenStore: NoopSyntheticTokenStore(),
         codexCookieStore: InMemoryCookieHeaderStore(),
         claudeCookieStore: InMemoryCookieHeaderStore(),

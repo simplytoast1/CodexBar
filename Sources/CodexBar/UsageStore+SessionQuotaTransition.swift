@@ -131,5 +131,6 @@ extension UsageStore {
     func postSessionQuotaTransitionIfEnabled(_ transition: SessionQuotaTransition, provider: UsageProvider) {
         guard self.settings.sessionQuotaNotificationsEnabled else { return }
         self.sessionQuotaNotifier.post(transition: transition, provider: provider, badge: nil)
+        self.relaySessionQuotaTransitionToNotify(transition, provider: provider)
     }
 }

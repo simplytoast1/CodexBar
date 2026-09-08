@@ -36,6 +36,7 @@ struct SettingsSidebarView: View {
             SettingsSidebarPaneRow(pane: .iCloudSync, systemImage: "icloud.fill", color: .blue)
             SettingsSidebarPaneRow(pane: .usageSpend, systemImage: "chart.bar.fill", color: .green)
             SettingsSidebarPaneRow(pane: .notifications, systemImage: "bell.badge.fill", color: .red)
+            SettingsSidebarPaneRow(pane: .notify, systemImage: "iphone.gen3.radiowaves.left.and.right", color: .pink)
             SettingsSidebarPaneRow(pane: .menuBar, systemImage: "menubar.rectangle", color: .blue)
             SettingsSidebarPaneRow(pane: .menu, systemImage: "filemenu.and.selection", color: .teal)
             SettingsSidebarPaneRow(pane: .advanced, systemImage: "slider.horizontal.3", color: .purple)
