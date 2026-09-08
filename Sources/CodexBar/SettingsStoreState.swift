@@ -92,4 +92,44 @@ struct SettingsDefaultsState {
     var iCloudSyncSnapshotsEnabled: Bool
     var iCloudSyncShowFleetAccounts: Bool
     var iCloudSyncDeviceID: String
+    var notify: NotifyDefaultsState
+}
+
+/// The Notify! settings, grouped so one field carries them all into
+/// `SettingsDefaultsState` rather than a dozen.
+///
+/// The device token is deliberately absent: it lives in the Keychain, never in
+/// defaults. So are these values from `SyncedPreferences`, which is an explicit
+/// allow-list — the three handles name tiles this Mac created, and a second Mac
+/// adopting them would have two publishers writing one Live Activity.
+struct NotifyDefaultsState {
+    /// Off until the user links a device. A feature that talks to someone
+    /// else's server cannot ship enabled.
+    var enabled: Bool
+    var deviceID: String
+
+    /// The four surfaces, each switchable alone, because they fail for
+    /// different reasons: a Mac link cannot start a tile but keeps its widgets
+    /// happily, and a Home Screen widget can be refused by a server-side kill
+    /// switch while the other two are being served.
+    var liveActivityEnabled: Bool
+    var widgetEnabled: Bool
+    var screenWidgetEnabled: Bool
+    var notificationsEnabled: Bool
+
+    /// Which provider instances may fill the tile's six metric slots. Empty
+    /// means automatic, and severity decides.
+    var instanceSelectionRaw: [String]
+
+    /// Which single window the Lock Screen gauge shows. Both empty means
+    /// whichever quota needs attention most.
+    var gaugeInstanceID: String
+    var gaugeQuotaKey: String
+
+    /// The handles of the tile and widgets CodexBar created, so every write
+    /// after the first addresses its own rather than upserting over whatever
+    /// the user last started from another script.
+    var activityID: String
+    var widgetID: String
+    var screenWidgetID: String
 }

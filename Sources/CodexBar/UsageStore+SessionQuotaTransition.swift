@@ -129,6 +129,7 @@ extension UsageStore {
     {
         if notificationsEnabled {
             self.sessionQuotaNotifier.post(transition: transition, provider: provider, badge: nil)
+            self.relaySessionQuotaTransitionToNotify(transition, provider: provider)
         }
         if transition == .depleted {
             self.emitQuotaReachedHook(provider: provider, sessionWindow: sessionWindow, snapshot: snapshot)

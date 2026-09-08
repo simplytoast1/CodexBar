@@ -29,6 +29,7 @@ public enum LogCategories {
     public static let logging = "logging"
     public static let memoryPressure = "memory-pressure"
     public static let notifications = "notifications"
+    public static let notify = "notify"
     public static let providerDetection = "provider-detection"
     public static let providers = "providers"
     public static let quotaWarningNotifications = "quotaWarningNotifications"
