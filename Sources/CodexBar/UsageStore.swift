@@ -323,6 +323,10 @@ final class UsageStore {
         TimeInterval) async throws -> Void)?
     @ObservationIgnored var widgetSnapshotPersistTask: Task<Void, Never>?
     @ObservationIgnored var lastQueuedWidgetSnapshot: WidgetSnapshot?
+    /// The Notify! publisher, created on the first snapshot once the feature is on.
+    /// One per store: it holds the stored tile and widget handles and the single
+    /// in-flight publish, and two of them would race over one nil activity id.
+    @ObservationIgnored var notifyDriver: NotifyPublishDriver?
     @ObservationIgnored let widgetSnapshotURL: URL?
     @ObservationIgnored let widgetTimelineReloader: @MainActor () -> Void
     @ObservationIgnored var widgetUsagePreservationBlockedProviders: Set<ProviderInstanceID> = []
@@ -991,6 +995,7 @@ final class UsageStore {
             provider: provider,
             soundEnabled: self.settings.quotaWarningSoundEnabled,
             onScreenAlertEnabled: self.settings.quotaWarningOnScreenAlertEnabled)
+        self.relayQuotaWarningToNotify(event, provider: provider)
     }
 
     func postPredictivePaceWarning(_ event: PredictivePaceWarningEvent, provider: UsageProvider, now: Date) {
@@ -1000,6 +1005,7 @@ final class UsageStore {
             soundEnabled: self.settings.quotaWarningSoundEnabled,
             onScreenAlertEnabled: self.settings.quotaWarningOnScreenAlertEnabled,
             now: now)
+        self.relayPredictivePaceWarningToNotify(event, provider: provider, now: now)
     }
 }
 

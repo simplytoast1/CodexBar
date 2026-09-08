@@ -251,6 +251,9 @@ final class SettingsStore {
     #endif
 
     @ObservationIgnored let userDefaults: UserDefaults
+    /// Where the Notify! device token is read from and written to. Injected so tests can use
+    /// an in-memory store: a test that reaches the real Keychain can raise a macOS prompt.
+    @ObservationIgnored let notifyTokenStore: any NotifyTokenStoring
     @ObservationIgnored let configStore: CodexBarConfigStore
     @ObservationIgnored let antigravityOAuthCredentialsStore: AntigravityOAuthCredentialsStore
     @ObservationIgnored let keychainAccessPolicy: SettingsStoreKeychainAccessPolicy
@@ -307,6 +310,7 @@ final class SettingsStore {
         userDefaults: UserDefaults = .standard,
         configStore: CodexBarConfigStore = CodexBarConfigStore(),
         zaiTokenStore: any ZaiTokenStoring = KeychainZaiTokenStore(),
+        notifyTokenStore: any NotifyTokenStoring = KeychainNotifyTokenStore(),
         syntheticTokenStore: any SyntheticTokenStoring = KeychainSyntheticTokenStore(),
         codexCookieStore: any CookieHeaderStoring = KeychainCookieHeaderStore(
             account: "codex-cookie",
@@ -390,6 +394,7 @@ final class SettingsStore {
             keychainAccessDisabled: keychainAccessPolicy.isExplicitlyDisabled(),
             stores: legacyStores)
         self.userDefaults = userDefaults
+        self.notifyTokenStore = notifyTokenStore
         self.configStore = configStore
         self.antigravityOAuthCredentialsStore = antigravityOAuthCredentialsStore
         self.keychainAccessPolicy = keychainAccessPolicy
@@ -657,6 +662,7 @@ extension SettingsStore {
         if userDefaults.string(forKey: "iCloudSyncDeviceID") == nil {
             userDefaults.set(iCloudSyncDeviceID, forKey: "iCloudSyncDeviceID")
         }
+        let notify = Self.loadNotifyDefaults(userDefaults: userDefaults)
         return SettingsDefaultsState(
             refreshFrequency: refreshFrequency,
             adaptiveActivityScanConsent: adaptiveActivityScanConsent,
@@ -748,7 +754,35 @@ extension SettingsStore {
             iCloudSyncIncludeSecrets: iCloudSyncIncludeSecrets,
             iCloudSyncSnapshotsEnabled: iCloudSyncSnapshotsEnabled,
             iCloudSyncShowFleetAccounts: iCloudSyncShowFleetAccounts,
-            iCloudSyncDeviceID: iCloudSyncDeviceID)
+            iCloudSyncDeviceID: iCloudSyncDeviceID,
+            notify: notify)
+    }
+
+    /// Reads the Notify! settings.
+    ///
+    /// `enabled` defaults to false and stays false until the user links a
+    /// device: this is the only CodexBar feature that sends app state to a host
+    /// the user has no account with, so it cannot ship switched on. The three
+    /// surface switches default to true because they only matter once the
+    /// feature is on, and a user who linked a phone wants what they linked it
+    /// for. The Home Screen widget is included in that despite shipping behind
+    /// the gateway's own kill switch: a 503 there is handled as "not yet"
+    /// rather than as an error, so defaulting it off would only mean nobody saw
+    /// the surface on the day Notify! switched it on.
+    private static func loadNotifyDefaults(userDefaults: UserDefaults) -> NotifyDefaultsState {
+        NotifyDefaultsState(
+            enabled: userDefaults.object(forKey: "notifyEnabled") as? Bool ?? false,
+            deviceID: userDefaults.string(forKey: "notifyDeviceID") ?? "",
+            liveActivityEnabled: userDefaults.object(forKey: "notifyLiveActivityEnabled") as? Bool ?? true,
+            widgetEnabled: userDefaults.object(forKey: "notifyWidgetEnabled") as? Bool ?? true,
+            screenWidgetEnabled: userDefaults.object(forKey: "notifyScreenWidgetEnabled") as? Bool ?? true,
+            notificationsEnabled: userDefaults.object(forKey: "notifyNotificationsEnabled") as? Bool ?? true,
+            instanceSelectionRaw: userDefaults.stringArray(forKey: "notifyInstanceSelection") ?? [],
+            gaugeInstanceID: userDefaults.string(forKey: "notifyGaugeInstanceID") ?? "",
+            gaugeQuotaKey: userDefaults.string(forKey: "notifyGaugeQuotaKey") ?? "",
+            activityID: userDefaults.string(forKey: "notifyActivityID") ?? "",
+            widgetID: userDefaults.string(forKey: "notifyWidgetID") ?? "",
+            screenWidgetID: userDefaults.string(forKey: "notifyScreenWidgetID") ?? "")
     }
 
     private static func hadPreviousAppLaunch(userDefaults: UserDefaults) -> Bool {
