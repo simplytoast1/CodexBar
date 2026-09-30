@@ -41,6 +41,9 @@ extension UsageStore {
         NotificationCenter.default.post(
             name: .codexbarUsageSnapshotsDidChange,
             object: UsageSnapshotsDidChangeEvent(snapshots: self.cloudSyncAccountSnapshots()))
+        // Same edge, same snapshot: the phone is fed from the value the macOS widget just got,
+        // so the two surfaces cannot disagree about one quota.
+        self.notifyUsageDidChange()
         let previousTask = self.widgetSnapshotPersistTask
         self.widgetSnapshotPersistTask = Task { @MainActor in
             _ = await previousTask?.result

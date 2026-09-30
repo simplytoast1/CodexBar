@@ -8,6 +8,7 @@ enum SettingsPane: Hashable {
     case iCloudSync
     case usageSpend
     case notifications
+    case notify
     case menuBar
     case menu
     case advanced
@@ -33,6 +34,7 @@ enum SettingsPane: Hashable {
         case .iCloudSync: L("iCloud Sync")
         case .usageSpend: L("tab_usage_spend")
         case .notifications: L("tab_notifications")
+        case .notify: L("tab_notify")
         case .menuBar: L("tab_menu_bar")
         case .menu: L("tab_menu")
         case .advanced: L("tab_advanced")
@@ -194,6 +196,8 @@ struct PreferencesView: View {
             SpendDashboardPane(settings: self.settings, store: self.store)
         case .notifications:
             NotificationsPane(settings: self.settings)
+        case .notify:
+            NotifyPane(settings: self.settings, store: self.store)
         case .menuBar:
             MenuBarPane(settings: self.settings, store: self.store)
         case .menu:
